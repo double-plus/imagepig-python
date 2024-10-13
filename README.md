@@ -1,7 +1,13 @@
 # imagepig
-Python package for [Image Pig](https://imagepig.com/), the API for AI images.
+[Python package](https://pypi.org/project/imagepig/) for [Image Pig](https://imagepig.com/), the API for AI images.
 
-Example of basic usage:
+## Installation
+
+```
+pip install imagepig
+```
+
+## Example of usage
 
 ```python
 from imagepig import ImagePig
@@ -13,7 +19,7 @@ imagepig = ImagePig("your-api-key")
 result = imagepig.xl("cute piglet running on a green garden")
 
 # save image to a file
-result.save('cute-piglet.jpeg')
+result.save("cute-piglet.jpeg")
 
 # or access image data (bytes)
 result.data
