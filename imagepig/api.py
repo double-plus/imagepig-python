@@ -3,10 +3,14 @@ from datetime import datetime, timedelta
 from enum import Enum
 from io import BytesIO
 from pathlib import Path
+from time import sleep
 from typing import Optional
 from urllib.parse import urlparse
 
 import requests
+
+DOWNLOAD_ATTEMPTS = 10
+DOWNLOAD_INTERRUPTION = 1
 
 
 class APIResponse:
@@ -19,10 +23,16 @@ class APIResponse:
             return b64decode(data)
 
         if self.url:
-            response = requests.get(self.url, headers={"User-Agent": "Mozilla/5.0"})
+            for _ in range(DOWNLOAD_ATTEMPTS):
+                response = requests.get(self.url, headers={"User-Agent": "Mozilla/5.0"})
 
-            if response.ok:
-                return response.content
+                if response.ok:
+                    return response.content
+
+                if response.status_code == 404:
+                    sleep(DOWNLOAD_INTERRUPTION)
+                else:
+                    break
 
             response.raise_for_status()
 
