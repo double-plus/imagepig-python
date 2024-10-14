@@ -10,12 +10,12 @@ import requests
 
 
 class APIResponse:
-    def __init__(self, response: dict) -> None:
-        self.response = response
+    def __init__(self, content: dict) -> None:
+        self.content = content
 
     @property
     def data(self) -> bytes:
-        if data := self.response.get("image_data"):
+        if data := self.content.get("image_data"):
             return b64decode(data)
 
         if self.url:
@@ -39,19 +39,19 @@ class APIResponse:
 
     @property
     def url(self) -> str:
-        return self.response.get("image_url")
+        return self.content.get("image_url")
 
     @property
     def seed(self) -> Optional[int]:
-        return self.response.get("seed")
+        return self.content.get("seed")
 
     @property
     def mime_type(self) -> Optional[str]:
-        return self.response.get("mime_type")
+        return self.content.get("mime_type")
 
     @property
     def duration(self) -> Optional[timedelta]:
-        if (started_at := self.response.get("started_at")) and (completed_at := self.response.get("completed_at")):
+        if (started_at := self.content.get("started_at")) and (completed_at := self.content.get("completed_at")):
             return datetime.fromisoformat(completed_at) - datetime.fromisoformat(started_at)
 
         return None
@@ -77,7 +77,7 @@ class ImagePig:
         self.api_key = api_key
         self.api_url = api_url
 
-    def _api_call(self, endpoint: str, payload: dict) -> APIResponse:
+    def _call_api(self, endpoint: str, payload: dict) -> APIResponse:
         response = requests.post(
             f"{self.api_url}/{endpoint}",
             headers={"Api-Key": self.api_key},
@@ -95,18 +95,18 @@ class ImagePig:
 
     def default(self, prompt: str, negative_prompt: str = "", **kwargs) -> APIResponse:
         kwargs.update({"positive_prompt": prompt, "negative_prompt": prompt})
-        return self._api_call("", kwargs)
+        return self._call_api("", kwargs)
 
     def xl(self, prompt: str, negative_prompt: str = "", **kwargs) -> APIResponse:
         kwargs.update({"positive_prompt": prompt, "negative_prompt": prompt})
-        return self._api_call("xl", kwargs)
+        return self._call_api("xl", kwargs)
 
     def flux(self, prompt: str, proportion: Proportion = Proportion.LANDSCAPE, **kwargs) -> APIResponse:
         kwargs.update({"positive_prompt": prompt, "proportion": proportion.value})
-        return self._api_call("flux", kwargs)
+        return self._call_api("flux", kwargs)
 
     def faceswap(self, source_image_url: str, target_image_url: str, **kwargs) -> APIResponse:
         self._check_url(source_image_url)
         self._check_url(target_image_url)
         kwargs.update({"source_image_url": source_image_url, "target_image_url": target_image_url})
-        return self._api_call("faceswap", kwargs)
+        return self._call_api("faceswap", kwargs)
