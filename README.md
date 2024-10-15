@@ -27,3 +27,6 @@ result.data
 # or access image as an object (needs to have the Pillow package installed)
 result.image
 ```
+
+## Contact us
+Something does not work as expected? Feel free to [send us a message](https://imagepig.com/contact/), we are here for you.

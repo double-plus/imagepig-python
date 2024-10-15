@@ -4,7 +4,7 @@ version = "1.0.1"
 authors = [
   { name="Pavel Mises", email="pavel@double.plus" },
 ]
-description = "Library to use Image Pig, the API for AI images"
+description = "Package to use Image Pig, the API for AI images"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [

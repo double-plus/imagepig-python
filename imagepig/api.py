@@ -1,10 +1,10 @@
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from datetime import datetime, timedelta
 from enum import Enum
 from io import BytesIO
 from pathlib import Path
 from time import sleep
-from typing import Optional
+from typing import Optional, Union
 from urllib.parse import urlparse
 
 import requests
@@ -99,10 +99,6 @@ class ImagePig:
 
         response.raise_for_status()
 
-    def _check_url(self, url: str) -> None:
-        parsed_url = urlparse(url)
-        assert parsed_url.scheme in {"http", "https"} and parsed_url.netloc
-
     def default(self, prompt: str, negative_prompt: str = "", **kwargs) -> APIResponse:
         kwargs.update({"positive_prompt": prompt, "negative_prompt": prompt})
         return self._call_api("", kwargs)
@@ -115,8 +111,19 @@ class ImagePig:
         kwargs.update({"positive_prompt": prompt, "proportion": proportion.value})
         return self._call_api("flux", kwargs)
 
-    def faceswap(self, source_image_url: str, target_image_url: str, **kwargs) -> APIResponse:
-        self._check_url(source_image_url)
-        self._check_url(target_image_url)
-        kwargs.update({"source_image_url": source_image_url, "target_image_url": target_image_url})
+    def _prepare_image(self, image: Union[str, bytes], param_name: str, params: dict):
+        if isinstance(image, str):
+            parsed_url = urlparse(image)
+            assert parsed_url.scheme in {"http", "https"} and parsed_url.netloc
+            params[f"{param_name}_url"] = image
+        elif isinstance(image, bytes):
+            params[f"{param_name}_data"] = b64encode(image)
+        else:
+            raise TypeError(f"Please provide str or bytes object as {param_name}.")
+
+        return params
+
+    def faceswap(self, source_image: Union[str, bytes], target_image: Union[str, bytes], **kwargs) -> APIResponse:
+        kwargs = self._prepare_image(source_image, "source_image", kwargs)
+        kwargs = self._prepare_image(target_image, "target_image", kwargs)
         return self._call_api("faceswap", kwargs)
