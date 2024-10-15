@@ -1,6 +1,6 @@
 [project]
 name = "imagepig"
-version = "1.0.2"
+version = "1.0.3"
 authors = [
   { name="Pavel Mises", email="pavel@double.plus" },
 ]

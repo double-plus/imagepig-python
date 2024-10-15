@@ -127,3 +127,9 @@ class ImagePig:
         kwargs = self._prepare_image(source_image, "source_image", kwargs)
         kwargs = self._prepare_image(target_image, "target_image", kwargs)
         return self._call_api("faceswap", kwargs)
+
+    def upscale(self, image: Union[str, bytes], upscaling_factor=2, **kwargs) -> APIResponse:
+        assert upscaling_factor in (2, 4, 8)
+        kwargs["upscaling_factor"] = upscaling_factor
+        kwargs = self._prepare_image(image, "image", kwargs)
+        return self._call_api("upscale", kwargs)
