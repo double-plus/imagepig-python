@@ -1,2 +1,2 @@
 #!/bin/sh
-rm -rf dist imagepig.egg-info
+rm -rf dist output imagepig.egg-info
