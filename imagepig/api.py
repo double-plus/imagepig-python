@@ -138,7 +138,15 @@ class ImagePig:
         kwargs = self._prepare_image(image, "image", kwargs)
         return self._call_api("cutout", kwargs)
 
-    def replace(self, image: Union[str, bytes], select_prompt: str, prompt: str, negative_prompt: str = "", **kwargs):
-        kwargs.update({"select_prompt": select_prompt, "positive_prompt": prompt, "negative_prompt": negative_prompt})
+    def replace(
+        self, image: Union[str, bytes], select_prompt: str, positive_prompt: str, negative_prompt: str = "", **kwargs
+    ):
+        kwargs.update(
+            {
+                "select_prompt": select_prompt,
+                "positive_prompt": positive_prompt,
+                "negative_prompt": negative_prompt,
+            }
+        )
         kwargs = self._prepare_image(image, "image", kwargs)
         return self._call_api("replace", kwargs)
