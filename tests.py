@@ -7,7 +7,7 @@ from imagepig import ImagePig
 
 IMAGEPIG_API_KEY = getenv("IMAGEPIG_API_KEY")
 JANE = "https://imagepig.com/static/jane.jpeg"
-MONA_LISA = "https://imagepig.com/static/mona_lisa.jpeg"
+MONA_LISA = "https://imagepig.com/static/mona-lisa.jpeg"
 
 
 def main():
@@ -23,6 +23,7 @@ def main():
     imagepig.upscale(JANE).save(path / "upscale.jpeg")
     imagepig.cutout(JANE).save(path / "cutout.png")
     imagepig.replace(JANE, "woman", "robot").save(path / "replace.jpeg")
+    imagepig.outpaint(JANE, "dress", bottom=500).save(path / "outpaint.jpeg")
 
 
 if __name__ == "__main__":

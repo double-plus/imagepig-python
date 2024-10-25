@@ -151,3 +151,27 @@ class ImagePig:
         )
         kwargs = self._prepare_image(image, "image", kwargs)
         return self._call_api("replace", kwargs)
+
+    def outpaint(
+        self,
+        image: Union[str, bytes],
+        positive_prompt: str,
+        negative_prompt: str = "",
+        top: int = 0,
+        right: int = 0,
+        bottom: int = 0,
+        left: int = 0,
+        **kwargs,
+    ):
+        kwargs.update(
+            {
+                "positive_prompt": positive_prompt,
+                "negative_prompt": negative_prompt,
+                "top": top,
+                "right": right,
+                "bottom": bottom,
+                "left": left,
+            }
+        )
+        kwargs = self._prepare_image(image, "image", kwargs)
+        return self._call_api("outpaint", kwargs)
