@@ -83,9 +83,10 @@ class ImagePig:
         SQUARE = "square"
         WIDE = "wide"
 
-    def __init__(self, api_key: str, api_url: str = "https://api.imagepig.com") -> None:
+    def __init__(self, api_key: str, raise_exceptions: bool = True, api_url: str = "https://api.imagepig.com") -> None:
         self.api_key = api_key
         self.api_url = api_url
+        self.raise_exceptions = raise_exceptions
 
     def _call_api(self, endpoint: str, payload: dict) -> APIResponse:
         response = requests.post(
@@ -94,7 +95,7 @@ class ImagePig:
             json=payload,
         )
 
-        if response.ok:
+        if response.ok or not self.raise_exceptions:
             return APIResponse(response.json())
 
         response.raise_for_status()
