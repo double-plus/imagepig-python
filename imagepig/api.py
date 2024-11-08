@@ -8,9 +8,14 @@ from typing import Optional, Union
 from urllib.parse import urlparse
 
 import requests
+from requests.exceptions import RequestException
 
 DOWNLOAD_ATTEMPTS = 10
 DOWNLOAD_INTERRUPTION = 1
+
+
+class ImagePigError(Exception):
+    pass
 
 
 class APIResponse:
@@ -43,7 +48,7 @@ class APIResponse:
         try:
             from PIL import Image
         except ImportError as e:
-            raise ImportError('Pillow package is not installed. Please install it using "pip install pillow"') from e
+            raise ImportError('Pillow package is not installed. Please install it using "pip install pillow".') from e
 
         return Image.open(BytesIO(self.data))
 
@@ -95,10 +100,25 @@ class ImagePig:
             json=payload,
         )
 
-        if response.ok or not self.raise_exceptions:
-            return APIResponse(response.json())
+        try:
+            content = response.json() or {}
+        except RequestException:
+            content = {}
 
-        response.raise_for_status()
+        if response.ok or not self.raise_exceptions:
+            return APIResponse(content)
+
+        message = content.get("error", "")
+
+        if (
+            not message
+            and (detail := content.get("detail"))
+            and isinstance(detail, list)
+            and isinstance(detail[0], dict)
+        ):
+            message = detail[0].get("msg", "")
+
+        raise ImagePigError(f"The API responded with HTTP {response.status_code}: {message}")
 
     def default(self, prompt: str, negative_prompt: str = "", **kwargs) -> APIResponse:
         kwargs.update({"positive_prompt": prompt, "negative_prompt": prompt})
@@ -115,7 +135,10 @@ class ImagePig:
     def _prepare_image(self, image: Union[str, bytes], param_name: str, params: dict):
         if isinstance(image, str):
             parsed_url = urlparse(image)
-            assert parsed_url.scheme in {"http", "https"} and parsed_url.netloc
+
+            if parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
+                raise ImagePigError(f"Invalid URL: {image}. We support only the HTTP(S) protocol.")
+
             params[f"{param_name}_url"] = image
         elif isinstance(image, bytes):
             params[f"{param_name}_data"] = b64encode(image)
@@ -129,8 +152,10 @@ class ImagePig:
         kwargs = self._prepare_image(target_image, "target_image", kwargs)
         return self._call_api("faceswap", kwargs)
 
-    def upscale(self, image: Union[str, bytes], upscaling_factor=2, **kwargs) -> APIResponse:
-        assert upscaling_factor in (2, 4, 8)
+    def upscale(self, image: Union[str, bytes], upscaling_factor: int = 2, **kwargs) -> APIResponse:
+        if upscaling_factor not in (2, 4, 8):
+            raise ImagePigError("Upscaling factor needs to be 2, 4 or 8.")
+
         kwargs["upscaling_factor"] = upscaling_factor
         kwargs = self._prepare_image(image, "image", kwargs)
         return self._call_api("upscale", kwargs)
